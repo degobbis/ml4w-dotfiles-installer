@@ -13,7 +13,7 @@ check_and_install() {
     local cmd=$1; local pkg=$2; local distro=$(get_distro_by_bin)
     if command -v "$cmd" &> /dev/null; then return 0; fi
     
-    warn "✗ $cmd is not installed."
+    warn "✗ $cmd is not installed. Installing now..."
     case "$distro" in
         arch) install_cmd="sudo pacman -S --needed --noconfirm $pkg" ;;
         fedora) install_cmd="sudo dnf install -y $pkg" ;;
@@ -21,14 +21,15 @@ check_and_install() {
         *) error "Unsupported distro."; return 1 ;;
     esac
 
-    echo -n -e "${YELLOW}Do you want to install $pkg now? (y/n): ${NC}" >&2
-    read -r response
-    
-    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then 
-        eval "$install_cmd"
-    else 
-        error "Required tool $pkg missing. Exiting."; exit 1
-    fi
+    eval "$install_cmd"
+
+    # echo -n -e "${YELLOW}Do you want to install $pkg now? (y/n): ${NC}" >&2
+    # read -r response
+    # if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then 
+    #     eval "$install_cmd"
+    # else 
+    #     error "Required tool $pkg missing. Exiting."; exit 1
+    # fi
 }
 
 # --- Helper to install a package disto agnostic ---
