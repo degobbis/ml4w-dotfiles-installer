@@ -10,7 +10,7 @@ backup_existing_profile() {
 
     info "Backing up current profile state to $backup_path..."
     mkdir -p "$(dirname "$backup_path")"
-    
+
     if cp -a "$profile_dir" "$backup_path"; then
         info "  - Backup completed successfully."
     else
@@ -26,16 +26,16 @@ handle_restore_logic() {
     local subfolder=$4
 
     local restore_data=$(echo "$json" | jq -r '.restore[] | "\(.title) [\(.source)]"' 2>/dev/null)
-    
+
     if [ -z "$restore_data" ]; then
         return 0
     fi
 
     local selected_default=$(echo "$restore_data" | paste -sd "," -)
-    
+
     info "Existing configuration found. Select items to keep (Restore):"
     info "Uncheck items to overwrite with default versions from the update."
-    
+
     local user_selections=$(echo "$restore_data" | gum choose --no-limit --selected="$selected_default")
 
     if [ -z "$user_selections" ]; then
@@ -47,9 +47,9 @@ handle_restore_logic() {
     while IFS= read -r selection; do
         local title=$(echo "$selection" | sed 's/ \[.*\]$//')
         local rel_src=$(echo "$json" | jq -r ".restore[] | select(.title==\"$title\") | .source")
-        
+
         local src_path="$existing_dir/$rel_src"
-        
+
         local dest_path
         if [ -n "$subfolder" ] && [ "$subfolder" != "null" ]; then
             dest_path="$temp_dir/$subfolder/$rel_src"
@@ -90,7 +90,7 @@ copy_with_blacklist() {
     find . -mindepth 1 | while read -r item; do
         local rel_path="${item#./}"
         local target_path="$target/$rel_path"
-        
+
         local skip=false
         for b in "${blacklisted[@]}"; do
             if [[ "$rel_path" == "$b" ]] || [[ "$rel_path" == "$b"/* ]]; then
@@ -153,7 +153,7 @@ deploy_symlinks() {
         local name=$(basename "$item")
         [[ "$name" == "." || "$name" == ".." || "$name" == ".config" ]] && continue
         [ -e "$item" ] || continue
-        
+
         create_symlink "$item" "$HOME/$name" "$backup_dir"
     done
 
@@ -163,7 +163,7 @@ deploy_symlinks() {
             local name=$(basename "$item")
             [[ "$name" == "." || "$name" == ".." ]] && continue
             [ -e "$item" ] || continue
-            
+
             create_symlink "$item" "$HOME/.config/$name" "$backup_dir"
         done
     fi
@@ -208,37 +208,9 @@ run_setup_logic() {
     local distro=$(get_distro_by_bin)
     local dep_dir="$repo_path/setup/dependencies"
     local user_config_dir="$HOME/.config/ml4w-dotfiles-installer/$profile_id"
-    
-    # 1. Repo Preflight
-    local preflight="$repo_path/setup/preflight-$distro.sh"
-    if [ -f "$preflight" ]; then 
-        info "Running preflight script for $distro..."
-        bash "$preflight"
-    fi
-    
-    # 2. Dependencies
-    if [ ! -d "$dep_dir" ]; then 
-        warn "Dependency folder not found at: $dep_dir"
-        return 1
-    fi
-    
-    [ -f "$dep_dir/packages" ] && process_package_file "$dep_dir/packages"
-    local distro_pkgs="$dep_dir/packages-$distro"
-    [ -f "$distro_pkgs" ] && process_package_file "$distro_pkgs"
 
-    # 3. Repo Post-installation
-    local postflight="$repo_path/setup/post-$distro.sh"
-    if [ -f "$postflight" ]; then 
-        info "Running post-installation script for $distro..."
-        bash "$postflight"
-    fi
-
-    # 4. User-specific Post-installation
-    local user_post="$user_config_dir/post.sh"
-    if [ -f "$user_post" ]; then
-        info "Running user-specific post-installation script for $profile_id..."
-        bash "$user_post"
-    fi
+    # Run the new setup script
+    source "$repo_path/setup/setup-$distro-new.sh"
 }
 
 # --- Check dotfiles installer dependencies ---
@@ -258,7 +230,7 @@ set_active_profile() {
 
     # Write the JSON object to the file
     echo "{\"active\":\"$id\"}" > "$active_file"
-    
+
     info "Profile '$id' marked as active in $active_file"
 }
 
@@ -266,10 +238,10 @@ set_active_profile() {
 read_dotinst() {
     local source=$1; local target_base_dir=$2; local test_mode=$3
     local content=$(get_json_content "$source")
-    
-    if [ $? -ne 0 ] || [ -z "$content" ]; then 
+
+    if [ $? -ne 0 ] || [ -z "$content" ]; then
         error "Failed to read configuration from: $source"
-        return 1 
+        return 1
     fi
 
     local name=$(echo "$content" | jq -r '.name // "Unknown Profile"')
@@ -318,7 +290,7 @@ read_dotinst() {
         info "Remote repository detected. Cloning source..."
         local clone_cmd="git clone --depth=1"
         [ -n "$tag" ] && [ "$tag" != "null" ] && clone_cmd="git clone --depth=1 --branch $tag"
-        if ! $clone_cmd "$git_url" "$working_dir" &> /dev/null; then 
+        if ! $clone_cmd "$git_url" "$working_dir" &> /dev/null; then
             error "Failed to clone repository."; rm -rf "$working_dir"; return 1
         fi
     fi
