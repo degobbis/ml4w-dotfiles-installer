@@ -19,7 +19,7 @@ source "$LIB_DIR/utils.sh"
 # Default settings
 DOTFILES_DIR="$HOME/.mydotfiles"
 TEST_MODE=false
-SCRIPT_VERSION="0.2.4"
+SCRIPT_VERSION="0.2.4-1"
 
 # --- Check for Installer Config Folder ---
 INSTALLER_CONFIG="$HOME/.config/ml4w-dotfiles-installer"
@@ -114,7 +114,7 @@ if [ -n "$CLONE_PATH" ] && [ -d "$CLONE_PATH" ]; then
 
         DOTINST_JSON=$(get_json_content "$INSTALL_URL")
         RESTORE_COUNT=$(echo "$DOTINST_JSON" | jq '.restore | length' 2>/dev/null)
-        
+
         if [ "$RESTORE_COUNT" != "null" ] && [ "$RESTORE_COUNT" -gt 0 ]; then
             handle_restore_logic "$DOTINST_JSON" "$FINAL_TARGET" "$CLONE_PATH" "$SUBFOLDER"
         fi
@@ -122,7 +122,7 @@ if [ -n "$CLONE_PATH" ] && [ -d "$CLONE_PATH" ]; then
 
     info "Repository prepared. Starting package setup..."
     run_setup_logic "$CLONE_PATH" "$PROFILE_ID"
-    
+
     # --- Step C: Test Mode Exit ---
     if [ "$TEST_MODE" = true ]; then
         warn "Test Mode active: Skipping file staging and symlink creation."
@@ -142,7 +142,7 @@ if [ -n "$CLONE_PATH" ] && [ -d "$CLONE_PATH" ]; then
     if [ -d "$SRC_DIR" ]; then
         if copy_with_blacklist "$SRC_DIR" "$FINAL_TARGET" "$BLACKLIST_FILE"; then
             info "Successfully updated $PROFILE_ID dotfiles in sandbox."
-            
+
             # Step E: Create symlinks
             deploy_symlinks "$FINAL_TARGET" "$DOTFILES_DIR" "$PROFILE_ID"
 
