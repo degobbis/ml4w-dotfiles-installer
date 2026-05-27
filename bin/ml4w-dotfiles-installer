@@ -17,9 +17,9 @@ source "$LIB_DIR/helpers.sh"
 source "$LIB_DIR/utils.sh"
 
 # Default settings
-DOTFILES_DIR="$HOME/.mydotfiles"
+DOTFILES_DIR="$HOME/dotfiles"
 TEST_MODE=false
-SCRIPT_VERSION="0.2.4-1"
+SCRIPT_VERSION="0.2.5-1"
 
 # --- Check for Installer Config Folder ---
 INSTALLER_CONFIG="$HOME/.config/ml4w-dotfiles-installer"
@@ -48,7 +48,7 @@ show_help() {
     echo ""
     echo "Options: "
     echo "  --install <path/url> Install dotfiles from local path or URL"
-    echo "  --target <path>      Target directory (Default: $HOME/.mydotfiles-test)"
+    echo "  --target <path>      Target directory (Default: $HOME/.dotfiles)"
     echo "  --testmode           Run setup logic only (No staging, No symlinks)"
     echo "  --help               Show this help message"
 }
@@ -83,6 +83,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+clear
 echo
 info "Running ML4W Dotfiles Installer ($SCRIPT_VERSION)..."
 

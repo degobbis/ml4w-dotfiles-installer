@@ -36,7 +36,7 @@ handle_restore_logic() {
     info "Existing configuration found. Select items to keep (Restore):"
     info "Uncheck items to overwrite with default versions from the update."
 
-    local user_selections=$(echo "$restore_data" | gum choose --no-limit --selected="$selected_default")
+    local user_selections=$(echo "$restore_data" | gum choose --no-limit --height 25 --selected="$selected_default")
 
     if [ -z "$user_selections" ]; then
         warn "No items selected for restoration. Overwriting with all defaults."
